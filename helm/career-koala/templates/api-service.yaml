@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "career-koala.fullname" . }}-api
+  namespace: {{ include "career-koala.namespace" . }}
+  labels:
+    {{- include "career-koala.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.api.service.type }}
+  selector:
+    app.kubernetes.io/component: api
+    {{- include "career-koala.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: http
+      port: {{ .Values.api.service.port }}
+      targetPort: {{ .Values.api.service.port }}

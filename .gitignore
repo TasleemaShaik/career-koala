@@ -1,0 +1,46 @@
+# Node / JS
+node_modules/
+.next/
+out/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Python / Venv
+.venv/
+__pycache__/
+*.py[cod]
+
+# Go
+bin/
+*.exe
+*.test
+
+# IDE / Editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Env / Secrets
+.env
+*.log
+*.sqlite
+career_koala.db
+google-api-secret*
+kind/secrets.env
+gcp/secrets.env
+gcp/terraform-cluster-output
+go/migrations/20260109_000002_handshake_jobs.sql
+go/migrations/20251201_000001_seed_sample.sql
+careerkoala.ipynb
+*.tfstate*
+tfplan
+.terraform*
+
+# Build artifacts
+dist/
+build/
+coverage/

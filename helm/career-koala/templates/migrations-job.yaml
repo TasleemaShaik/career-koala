@@ -1,0 +1,66 @@
+{{- if .Values.migrations.enabled -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "career-koala.fullname" . }}-migrations
+  namespace: {{ include "career-koala.namespace" . }}
+  labels:
+    {{- include "career-koala.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": {{ .Values.migrations.hook | quote }}
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  backoffLimit: {{ .Values.migrations.backoffLimit }}
+  ttlSecondsAfterFinished: {{ .Values.migrations.ttlSecondsAfterFinished }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: migrations
+        {{- include "career-koala.selectorLabels" . | nindent 8 }}
+    spec:
+      restartPolicy: OnFailure
+      {{- if .Values.migrations.waitForPostgres }}
+      initContainers:
+        - name: wait-postgres
+          image: "{{ .Values.migrations.waitImage.repository }}:{{ .Values.migrations.waitImage.tag }}"
+          imagePullPolicy: {{ .Values.migrations.waitImage.pullPolicy }}
+          command:
+            - sh
+            - -c
+            - >
+              until PGPASSWORD="${POSTGRES_PASSWORD}" psql -h "${POSTGRES_HOST}"
+              -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${POSTGRES_DB}"
+              -c "select 1" >/dev/null 2>&1; do
+                echo "waiting for postgres";
+                sleep 2;
+              done
+          env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "career-koala.fullname" . }}-api
+                  key: POSTGRES_PASSWORD
+          envFrom:
+            - configMapRef:
+                name: {{ include "career-koala.fullname" . }}-api
+            - secretRef:
+                name: {{ include "career-koala.fullname" . }}-api
+      {{- end }}
+      containers:
+        - name: migrations
+          image: "{{ .Values.migrations.image.repository }}:{{ .Values.migrations.image.tag }}"
+          imagePullPolicy: {{ .Values.migrations.image.pullPolicy }}
+          command:
+            {{- toYaml .Values.migrations.command | nindent 12 }}
+          env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "career-koala.fullname" . }}-api
+                  key: POSTGRES_PASSWORD
+          envFrom:
+            - configMapRef:
+                name: {{ include "career-koala.fullname" . }}-api
+            - secretRef:
+                name: {{ include "career-koala.fullname" . }}-api
+{{- end -}}

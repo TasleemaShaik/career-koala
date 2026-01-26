@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: career-koala-migrations-debug
+  namespace: career-koala
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 3600
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: debug
+          image: postgres:16-alpine
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - sleep 36000
+          envFrom:
+            - configMapRef:
+                name: career-koala-api
+            - secretRef:
+                name: career-koala-api

@@ -1,0 +1,66 @@
+namespace:
+  create: true
+  name: "career-koala"
+
+api:
+  image:
+    repository: ""
+    tag: ""
+  secret:
+    POSTGRES_PASSWORD: ""
+    POSTGRES_DATABASE_URL: ""
+  env:
+    ENABLE_AI: "false"
+    MODEL_NAME: ""
+    VALIDATE_MODEL: "true"
+    GOOGLE_CLOUD_PROJECT: ""
+    VERTEX_LOCATION: ""
+    POSTGRES_HOST: ""
+    POSTGRES_PORT: ""
+    POSTGRES_USER: ""
+    POSTGRES_DB: ""
+    POSTGRES_SSLMODE: ""
+  waitForPostgres: true
+  waitForMigrations: true
+  waitImage:
+    repository: postgres
+    tag: "16-alpine"
+    pullPolicy: IfNotPresent
+
+ui:
+  image:
+    repository: ""
+    tag: ""
+  env:
+    API_BASE: ""
+  waitForApi: true
+  waitImage:
+    repository: curlimages/curl
+    tag: "8.6.0"
+    pullPolicy: IfNotPresent
+
+ingress:
+  enabled: false
+
+postgresql:
+  enabled: true
+  image:
+    repository: bitnami/postgresql
+    tag: latest
+  auth:
+    username: ""
+    password: ""
+    database: ""
+
+migrations:
+  ttlSecondsAfterFinished: 3600
+  backoffLimit: 6
+  image:
+    repository: ""
+    tag: ""
+    pullPolicy: IfNotPresent
+  waitForPostgres: true
+  waitImage:
+    repository: postgres
+    tag: "16-alpine"
+    pullPolicy: IfNotPresent

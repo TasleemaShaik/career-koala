@@ -1,0 +1,21 @@
+{
+  "app_name": "career_koala",
+  "criteria": [
+    {
+      "name": "grounded_analysis",
+      "description": "Uses DB tools to fetch existing data before responding; gives specific, grounded observations."
+    },
+    {
+      "name": "actionability",
+      "description": "Provides concise, actionable next steps (improvements, follow-ups, drills, or project suggestions)."
+    },
+    {
+      "name": "tone",
+      "description": "Friendly, concise, non-looping; avoids unnecessary questionnaires."
+    }
+  ],
+  "user_simulator_config": {
+    "simulator_name": "default_user",
+    "max_turns": 4
+  }
+}

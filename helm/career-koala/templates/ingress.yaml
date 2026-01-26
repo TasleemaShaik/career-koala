@@ -1,0 +1,61 @@
+{{- if and .Values.ingress.enabled .Values.ingress.ui.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "career-koala.fullname" . }}-ui
+  namespace: {{ include "career-koala.namespace" . }}
+  labels:
+    {{- include "career-koala.labels" . | nindent 4 }}
+  annotations:
+    {{- toYaml .Values.ingress.ui.annotations | nindent 4 }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: {{ .Values.ingress.ui.path }}
+            pathType: {{ .Values.ingress.ui.pathType }}
+            backend:
+              service:
+                name: {{ include "career-koala.fullname" . }}-ui
+                port:
+                  number: {{ .Values.ui.service.port }}
+{{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.ingress.host }}
+      secretName: {{ .Values.ingress.tls.secretName }}
+{{- end }}
+---
+{{- end }}
+{{- if and .Values.ingress.enabled .Values.ingress.api.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "career-koala.fullname" . }}-api
+  namespace: {{ include "career-koala.namespace" . }}
+  labels:
+    {{- include "career-koala.labels" . | nindent 4 }}
+  annotations:
+    {{- toYaml .Values.ingress.api.annotations | nindent 4 }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: {{ .Values.ingress.api.path }}
+            pathType: {{ .Values.ingress.api.pathType }}
+            backend:
+              service:
+                name: {{ include "career-koala.fullname" . }}-api
+                port:
+                  number: {{ .Values.api.service.port }}
+{{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.ingress.host }}
+      secretName: {{ .Values.ingress.tls.secretName }}
+{{- end }}
+{{- end }}

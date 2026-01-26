@@ -1,0 +1,42 @@
+[
+  {
+    "id": "jobs_analysis",
+    "description": "Analyze job applications from DB and suggest improvements, risks, and next steps.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Option 1 (Jobs): Review my recent job applications and suggest improvements. What risks and next steps do you see?"
+      }
+    ]
+  },
+  {
+    "id": "coding_analysis",
+    "description": "Analyze coding prep and identify weak patterns plus next focused practice items.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Option 2 (Coding): Analyze my coding practice. What patterns am I weak on and what should I solve next?"
+      }
+    ]
+  },
+  {
+    "id": "projects_analysis",
+    "description": "Find portfolio gaps and suggest a high-impact next project.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Option 3 (Projects): Review my projects and suggest the next project that fills the biggest gap."
+      }
+    ]
+  },
+  {
+    "id": "networking_analysis",
+    "description": "Review contacts and propose a focused follow-up plan.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Option 4 (Networking): Review my contacts and suggest a follow-up plan aligned to my job targets."
+      }
+    ]
+  }
+]

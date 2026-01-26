@@ -1,0 +1,107 @@
+nameOverride: ""
+fullnameOverride: ""
+
+namespace:
+  create: true
+  name: "career-koala"
+
+api:
+  replicaCount: 1
+  image:
+    repository: ""
+    tag: ""
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 8080
+  env:
+    ENABLE_AI: "false"
+    MODEL_NAME: ""
+    GOOGLE_CLOUD_PROJECT: ""
+    VERTEX_LOCATION: ""
+    VALIDATE_MODEL: "true"
+    RUN_MIGRATIONS: "false"
+    POSTGRES_HOST: ""
+    POSTGRES_PORT: ""
+    POSTGRES_USER: ""
+    POSTGRES_DB: ""
+    POSTGRES_SSLMODE: ""
+  secret:
+    POSTGRES_PASSWORD: ""
+    POSTGRES_DATABASE_URL: ""
+  readinessPath: /meta
+  livenessPath: /meta
+  waitForPostgres: true
+  waitForMigrations: true
+  waitImage:
+    repository: postgres
+    tag: "16-alpine"
+    pullPolicy: IfNotPresent
+  resources: {}
+
+ui:
+  replicaCount: 1
+  image:
+    repository: 
+    tag: 
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 3000
+  env:
+    API_BASE: ""
+  waitForApi: true
+  waitImage:
+    repository: curlimages/curl
+    tag: "8.6.0"
+    pullPolicy: IfNotPresent
+  resources: {}
+
+ingress:
+  enabled: true
+  className: nginx
+  host: 
+  api:
+    enabled: true
+    path: /api(/|$)(.*)
+    pathType: ImplementationSpecific
+    annotations:
+      nginx.ingress.kubernetes.io/use-regex: "true"
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+  ui:
+    enabled: true
+    path: /
+    pathType: Prefix
+    annotations: {}
+  tls:
+    enabled: false
+    secretName: ""
+
+postgresql:
+  enabled: false
+  auth:
+    username: ""
+    password: ""
+    database: ""
+  primary:
+    persistence:
+      enabled: false
+
+migrations:
+  enabled: true
+  hook: post-install,post-upgrade
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 300
+  command:
+    - /app/migrate
+    - up
+  image:
+    repository: 
+    tag: 
+    pullPolicy: IfNotPresent
+  waitForPostgres: true
+  waitImage:
+    repository: postgres
+    tag: "16-alpine"
+    pullPolicy: IfNotPresent

@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "career-koala.fullname" . }}-api
+  namespace: {{ include "career-koala.namespace" . }}
+  labels:
+    {{- include "career-koala.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.api.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: api
+      {{- include "career-koala.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: api
+        {{- include "career-koala.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- if or .Values.api.waitForPostgres .Values.api.waitForMigrations }}
+      initContainers:
+        {{- if .Values.api.waitForPostgres }}
+        - name: wait-postgres
+          image: "{{ .Values.api.waitImage.repository }}:{{ .Values.api.waitImage.tag }}"
+          imagePullPolicy: {{ .Values.api.waitImage.pullPolicy }}
+          command:
+            - sh
+            - -c
+            - >
+              until PGPASSWORD="${POSTGRES_PASSWORD}" psql -h "${POSTGRES_HOST}"
+              -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${POSTGRES_DB}"
+              -c "select 1" >/dev/null 2>&1; do
+                echo "waiting for postgres";
+                sleep 2;
+              done
+          envFrom:
+            - configMapRef:
+                name: {{ include "career-koala.fullname" . }}-api
+            - secretRef:
+                name: {{ include "career-koala.fullname" . }}-api
+        {{- end }}
+        {{- if .Values.api.waitForMigrations }}
+        - name: wait-migrations
+          image: "{{ .Values.api.waitImage.repository }}:{{ .Values.api.waitImage.tag }}"
+          imagePullPolicy: {{ .Values.api.waitImage.pullPolicy }}
+          command:
+            - sh
+            - -c
+            - >
+              until PGPASSWORD="${POSTGRES_PASSWORD}" psql -h "${POSTGRES_HOST}"
+              -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${POSTGRES_DB}"
+              -c "select version_id from goose_db_version limit 1" >/dev/null 2>&1; do
+                echo "waiting for migrations";
+                sleep 2;
+              done
+          envFrom:
+            - configMapRef:
+                name: {{ include "career-koala.fullname" . }}-api
+            - secretRef:
+                name: {{ include "career-koala.fullname" . }}-api
+        {{- end }}
+      {{- end }}
+      containers:
+        - name: api
+          image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}"
+          imagePullPolicy: {{ .Values.api.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.api.service.port }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "career-koala.fullname" . }}-api
+            - secretRef:
+                name: {{ include "career-koala.fullname" . }}-api
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.api.readinessPath }}
+              port: {{ .Values.api.service.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.api.livenessPath }}
+              port: {{ .Values.api.service.port }}
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            {{- toYaml .Values.api.resources | nindent 12 }}
