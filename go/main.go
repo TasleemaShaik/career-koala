@@ -36,8 +36,8 @@ func main() {
 	}
 	defer conn.Close()
 
-	var rnr *runner.Runner
 	var sessSvc session.Service
+	var runners map[string]*runner.Runner
 	if enableAI {
 		// Allow overriding the model via env (MODEL_NAME); validate and normalize.
 		modelName := os.Getenv("MODEL_NAME")
@@ -97,7 +97,7 @@ func main() {
 		}
 
 		sessSvc = session.InMemoryService()
-		rnr, err = runner.New(runner.Config{
+		rootRunner, err := runner.New(runner.Config{
 			AppName:        "career_koala",
 			Agent:          root,
 			SessionService: sessSvc,
@@ -105,12 +105,52 @@ func main() {
 		if err != nil {
 			log.Fatalf("runner: %v", err)
 		}
+		jobRunner, err := runner.New(runner.Config{
+			AppName:        "career_koala",
+			Agent:          jobAgent,
+			SessionService: sessSvc,
+		})
+		if err != nil {
+			log.Fatalf("runner: %v", err)
+		}
+		codingRunner, err := runner.New(runner.Config{
+			AppName:        "career_koala",
+			Agent:          codingAgent,
+			SessionService: sessSvc,
+		})
+		if err != nil {
+			log.Fatalf("runner: %v", err)
+		}
+		projectsRunner, err := runner.New(runner.Config{
+			AppName:        "career_koala",
+			Agent:          projectAgent,
+			SessionService: sessSvc,
+		})
+		if err != nil {
+			log.Fatalf("runner: %v", err)
+		}
+		networkingRunner, err := runner.New(runner.Config{
+			AppName:        "career_koala",
+			Agent:          networkingAgent,
+			SessionService: sessSvc,
+		})
+		if err != nil {
+			log.Fatalf("runner: %v", err)
+		}
+
+		runners = map[string]*runner.Runner{
+			"root":       rootRunner,
+			"jobs":       jobRunner,
+			"coding":     codingRunner,
+			"projects":   projectsRunner,
+			"networking": networkingRunner,
+		}
 	}
 
 	mux := http.NewServeMux()
 	// API only; Next.js UI runs separately.
 	if enableAI {
-		mux.HandleFunc("/chat", chatHandler(rnr, sessSvc, conn))
+		mux.HandleFunc("/chat", chatHandler(runners, sessSvc, conn))
 	} else {
 		mux.HandleFunc("/chat", chatDisabledHandler())
 	}
@@ -132,6 +172,7 @@ type chatRequest struct {
 	UserID    string `json:"user_id"`
 	SessionID string `json:"session_id"`
 	Message   string `json:"message"`
+	Agent     string `json:"agent"`
 }
 
 type chatResponse struct {
@@ -144,7 +185,7 @@ type errorResponse struct {
 	Error string `json:"error"`
 }
 
-func chatHandler(rnr *runner.Runner, sessSvc session.Service, dbConn *sql.DB) http.HandlerFunc {
+func chatHandler(runners map[string]*runner.Runner, sessSvc session.Service, dbConn *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			w.WriteHeader(http.StatusMethodNotAllowed)
@@ -159,8 +200,17 @@ func chatHandler(rnr *runner.Runner, sessSvc session.Service, dbConn *sql.DB) ht
 			writeError(w, http.StatusBadRequest, "message is required")
 			return
 		}
-		req.Message = normalizeAgentHint(req.Message)
-		log.Printf("chat request user=%s session=%s msg=%q", req.UserID, req.SessionID, req.Message)
+		req.Agent = strings.ToLower(strings.TrimSpace(req.Agent))
+		selectedRunner := runners["root"]
+		if req.Agent != "" && req.Agent != "auto" {
+			if alt, ok := runners[req.Agent]; ok {
+				selectedRunner = alt
+			}
+		}
+		if req.Agent == "" || req.Agent == "auto" {
+			req.Message = normalizeAgentHint(req.Message)
+		}
+		log.Printf("chat request user=%s session=%s agent=%s msg=%q", req.UserID, req.SessionID, req.Agent, req.Message)
 		if req.UserID == "" {
 			req.UserID = "demo_user"
 		}
@@ -206,7 +256,7 @@ func chatHandler(rnr *runner.Runner, sessSvc session.Service, dbConn *sql.DB) ht
 
 		ctx, cancel := context.WithTimeout(r.Context(), 60*time.Second)
 		defer cancel()
-		seq := rnr.Run(ctx, req.UserID, req.SessionID, &genai.Content{
+		seq := selectedRunner.Run(ctx, req.UserID, req.SessionID, &genai.Content{
 			Parts: []*genai.Part{{Text: req.Message}},
 		}, agent.RunConfig{})
 
