@@ -18,6 +18,9 @@ Single-user career coach with 4 domain agents (Jobs, Coding, Projects, Networkin
 ## Architecture diagram
 ![Career-Koala architecture](docs/diagrams/career-koala-architecture.png)
 
+## Demo video (kind)
+[▶ Career-Koala-kind-demo](https://youtu.be/qq-Yt6zIbDw)
+
 ## Prereqs
 - Docker
 - Helm

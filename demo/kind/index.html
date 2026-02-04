@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Career-Koala Demo (Kind)</title>
+    <style>
+      :root {
+        color-scheme: light;
+      }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: #f6f7fb;
+        color: #1f2933;
+      }
+      main {
+        max-width: 960px;
+        margin: 32px auto;
+        padding: 0 16px;
+      }
+      .card {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.1);
+      }
+      h1 {
+        margin: 0 0 8px;
+        font-size: 28px;
+      }
+      p {
+        margin: 0 0 16px;
+        color: #4b5563;
+      }
+      .video-wrapper {
+        position: relative;
+        width: 100%;
+        padding-top: 56.25%;
+        border-radius: 14px;
+        overflow: hidden;
+        background: #0f172a;
+      }
+      .video-wrapper iframe {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+      }
+      .meta {
+        margin-top: 16px;
+        font-size: 14px;
+        color: #6b7280;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="card">
+        <h1>Career-Koala Demo (Kind)</h1>
+        <p>Embedded YouTube demo with full playback controls.</p>
+        <div class="video-wrapper">
+          <iframe
+            src="https://www.youtube.com/embed/qq-Yt6zIbDw?rel=0&modestbranding=1"
+            title="Career-Koala demo"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+          ></iframe>
+        </div>
+        <div class="meta">Video source: https://youtu.be/qq-Yt6zIbDw</div>
+      </div>
+    </main>
+  </body>
+</html>
